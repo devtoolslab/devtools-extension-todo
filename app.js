@@ -1,5 +1,40 @@
 $(document).ready(function() {
 
+  var site = '';
+  var page = '';
+  var hash = '';
+
+  (function createChannel() {
+    //Create a port with background page for continous message communication
+    var port = chrome.extension.connect({
+        name: "Page URL Communication"
+    });
+
+    // Listen to messages from the background page
+    port.onMessage.addListener(function (message) {
+      console.log(message);
+      site = message.host;
+      page = message.host + message.pathname;
+      hash = message.hash;
+
+      setupTodoList('#general');
+      setupTodoList('#site');
+      setupTodoList('#page');
+
+      alignHeightsToTheMaximumColumnLength();
+
+    });
+  }());
+
+  // This sends an object to the background page
+  // where it can be relayed to the inspected page
+  function sendObjectToInspectedPage(message) {
+      message.tabId = chrome.devtools.inspectedWindow.tabId;
+      chrome.extension.sendMessage(message);
+  }
+
+  sendObjectToInspectedPage({action: "code", content: "chrome.extension.sendMessage(window.location, function(message){});"});
+
   var setupTodoList = function setupTodoList(listName) {
 
     var higherIndex = 0;
@@ -19,7 +54,7 @@ $(document).ready(function() {
       }
     };
 
-    // Handle saving to localstorage the todos
+    // Handle saving to the storage the todos
     var saveToLocalStorage = function saveToLocalStorage() {
       var itemName = '';
 
@@ -32,10 +67,10 @@ $(document).ready(function() {
       var object = {};
 
       object[itemName] = todos;
-      console.log(object);
       chrome.storage.local.set(object);
     };
 
+    // Handle loading from the storage the todos
     var getFromLocalStorage = function getFromLocalStorage() {
       var itemName = '';
       switch(listName) {
@@ -48,7 +83,6 @@ $(document).ready(function() {
         if (chrome.runtime && chrome.runtime.lastError) console.error(chrome.runtime.lastError);
         todos = val[itemName];
         if (!todos || !todos.length) todos = [];
-        console.log(itemName, todos);
         processExistingTodos(todos);
       });
     };
@@ -193,10 +227,5 @@ $(document).ready(function() {
     $('.to-do-list').height(max_height);
   };
 
-  setupTodoList('#general');
-  setupTodoList('#site');
-  setupTodoList('#page');
-
-  alignHeightsToTheMaximumColumnLength();
 
 });
