@@ -3,6 +3,7 @@
     "version": "0.1",
     "description": "",
     "devtools_page": "devtools.html",
+    "options_page": "index.html", //Temp, for debug
     "permissions": [
         "tabs",
         "http://*/*",

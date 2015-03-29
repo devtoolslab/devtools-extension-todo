@@ -55,7 +55,7 @@ body {
     height: 25px;
     font-size: 13px; }
 
-/* line 68, style.scss */
+/* line 69, style.scss */
 ul {
   display: block;
   padding-left: 0px;
@@ -63,24 +63,24 @@ ul {
   list-style-type: none;
   padding-bottom: 25px;
   word-wrap: break-word; }
-  /* line 76, style.scss */
+  /* line 77, style.scss */
   ul input[type=checkbox] {
     margin-right: 10px; }
-  /* line 80, style.scss */
+  /* line 81, style.scss */
   ul li {
     line-height: 30px; }
-    /* line 83, style.scss */
+    /* line 84, style.scss */
     ul li input {
       width: 13px;
       height: 13px;
       padding: 0;
       margin: 0;
       vertical-align: middle; }
-  /* line 94, style.scss */
+  /* line 95, style.scss */
   ul .delete:hover {
     cursor: pointer;
     color: black; }
-  /* line 98, style.scss */
+  /* line 99, style.scss */
   ul .delete:before {
     content: "\2718"; }
 

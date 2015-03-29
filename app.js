@@ -21,7 +21,31 @@ $(document).ready(function() {
 
     // Handle saving to localstorage the todos
     var saveToLocalStorage = function saveToLocalStorage() {
-      localStorage.setItem(listName + '-todos', JSON.stringify(todos));
+      var itemName = '';
+
+      switch(listName) {
+        case '#general': itemName = 'Todos_general'; break;
+        case '#site': itemName = 'Todos_site'; break;
+        case '#page': itemName = 'Todos_page'; break;
+      }
+
+      localforage.setItem(itemName, JSON.stringify(todos));
+    };
+
+    var getFromLocalStorage = function getFromLocalStorage() {
+      var itemName = '';
+      switch(listName) {
+        case '#general': itemName = 'Todos_general'; break;
+        case '#site': itemName = 'Todos_site'; break;
+        case '#page': itemName = 'Todos_page'; break;
+      }
+
+      localforage.getItem(itemName, function(err, val) {
+        if (err) console.error(err);
+        todos = JSON.parse(val) || [];
+        console.log(itemName, todos);
+        processExistingTodos(todos);
+      });
     };
 
     var prepareLiElement = function prepareLiElement(id, theClass, checked, value) {
@@ -66,8 +90,7 @@ $(document).ready(function() {
       }
     };
 
-    todos = JSON.parse(localStorage.getItem(listName + '-todos')) || [];
-    processExistingTodos(todos);
+    getFromLocalStorage();
 
     // Handle submit new task
     var submit_callback = function submit_callback(e) {
@@ -155,16 +178,20 @@ $(document).ready(function() {
     });
   };
 
-  setupTodoList('#global');
+  var alignHeightsToTheMaximumColumnLength = function alignHeightsToTheMaximumColumnLength() {
+    //Align heights to the max found
+    var max_height = 0;
+    $('.to-do-list').each(function(index, list) {
+      var list_height = $(list).height();
+      if (list_height > max_height) max_height = list_height;
+    });
+    $('.to-do-list').height(max_height);
+  };
+
+  setupTodoList('#general');
   setupTodoList('#site');
   setupTodoList('#page');
 
-  //Align heights to the max found
-  var max_height = 0;
-  $('.to-do-list').each(function(index, list) {
-    var list_height = $(list).height();
-    if (list_height > max_height) max_height = list_height;
-  });
-  $('.to-do-list').height(max_height);
+  alignHeightsToTheMaximumColumnLength();
 
 });
