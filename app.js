@@ -29,7 +29,11 @@ $(document).ready(function() {
         case '#page': itemName = 'Todos_page'; break;
       }
 
-      localforage.setItem(itemName, JSON.stringify(todos));
+      var object = {};
+
+      object[itemName] = todos;
+      console.log(object);
+      chrome.storage.local.set(object);
     };
 
     var getFromLocalStorage = function getFromLocalStorage() {
@@ -40,9 +44,10 @@ $(document).ready(function() {
         case '#page': itemName = 'Todos_page'; break;
       }
 
-      localforage.getItem(itemName, function(err, val) {
-        if (err) console.error(err);
-        todos = JSON.parse(val) || [];
+      chrome.storage.local.get(itemName, function(val) {
+        if (chrome.runtime && chrome.runtime.lastError) console.error(chrome.runtime.lastError);
+        todos = val[itemName];
+        if (!todos || !todos.length) todos = [];
         console.log(itemName, todos);
         processExistingTodos(todos);
       });

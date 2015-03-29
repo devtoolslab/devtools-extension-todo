@@ -6,6 +6,7 @@
     "options_page": "index.html", //Temp, for debug
     "permissions": [
         "tabs",
+        "storage",
         "http://*/*",
         "https://*/*"
     ],
