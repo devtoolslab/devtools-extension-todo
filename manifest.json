@@ -1,0 +1,12 @@
+{
+    "name": "DevTools TODO",
+    "version": "0.1",
+    "description": "",
+    "devtools_page": "devtools.html",
+    "permissions": [
+        "tabs",
+        "http://*/*",
+        "https://*/*"
+    ],
+    "manifest_version": 2
+}

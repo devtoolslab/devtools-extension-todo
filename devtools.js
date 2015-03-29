@@ -1,0 +1,1 @@
+chrome.devtools.panels.create("TODO", "todo.png", "index.html", function(panel) {});
