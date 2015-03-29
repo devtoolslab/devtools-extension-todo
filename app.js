@@ -1,25 +1,45 @@
 $(document).ready(function() {
 
-  var site = '';
-  var page = '';
-  var hash = '';
+  var currentSite = '';
+  var currentPage = '';
+  var currentHash = '';
 
+  var alignHeightsToTheMaximumColumnLength = function alignHeightsToTheMaximumColumnLength() {
+    //Align heights to the max found
+    var max_height = 0;
+    $('.to-do-list').each(function(index, list) {
+      var list_height = $(list).height();
+      if (list_height > max_height) max_height = list_height;
+    });
+    $('.to-do-list').height(max_height);
+  };
+
+  // Create a communication channel with the tab
   (function createChannel() {
     //Create a port with background page for continous message communication
     var port = chrome.extension.connect({
         name: "Page URL Communication"
     });
 
+
     // Listen to messages from the background page
     port.onMessage.addListener(function (message) {
       console.log(message);
-      site = message.host;
-      page = message.host + message.pathname;
-      hash = message.hash;
+      if (typeof message === 'number') {
+        sendObjectToInspectedPage({action: "code", content: "chrome.extension.sendMessage(window.location, function(message){});"});
+        return;
+      }
 
-      setupTodoList('#general');
-      setupTodoList('#site');
-      setupTodoList('#page');
+      if (currentSite !== message.host) {
+        currentSite = message.host;
+        setupTodoList('#site');
+      }
+
+      if (currentPage !== message.host + message.pathname) {
+        currentPage = message.host + message.pathname;
+        currentHash = message.hash;
+        setupTodoList('#page');
+      }
 
       alignHeightsToTheMaximumColumnLength();
 
@@ -29,18 +49,26 @@ $(document).ready(function() {
   // This sends an object to the background page
   // where it can be relayed to the inspected page
   function sendObjectToInspectedPage(message) {
+    if (chrome.devtools) {
       message.tabId = chrome.devtools.inspectedWindow.tabId;
       chrome.extension.sendMessage(message);
+    }
   }
 
   sendObjectToInspectedPage({action: "code", content: "chrome.extension.sendMessage(window.location, function(message){});"});
 
+  Array.prototype.diff = function(a) {
+    return this.filter(function(i) {return a.indexOf(i) < 0;});
+  };
+
   var setupTodoList = function setupTodoList(listName) {
 
     var higherIndex = 0;
+    var all_todos = [];
     var todos = [];
     var todoClass = '';
     var checked = '';
+    $(listName + ' ' + '#tasks li').remove();
 
     //Regenerate the percentage display
     var recalculatePercentage = function recalculatePercentage() {
@@ -66,7 +94,7 @@ $(document).ready(function() {
 
       var object = {};
 
-      object[itemName] = todos;
+      object[itemName] = all_todos.concat(todos);
       chrome.storage.local.set(object);
     };
 
@@ -81,8 +109,28 @@ $(document).ready(function() {
 
       chrome.storage.local.get(itemName, function(val) {
         if (chrome.runtime && chrome.runtime.lastError) console.error(chrome.runtime.lastError);
-        todos = val[itemName];
-        if (!todos || !todos.length) todos = [];
+        all_todos = val[itemName];
+        if (!all_todos || !all_todos.length) all_todos = [];
+
+        if (listName == '#general') {
+          todos = all_todos;
+          all_todos = [];
+        }
+
+        if (listName == '#site') {
+          todos = all_todos.filter(function(todo) {
+            if (todo.domain == currentSite) return true;
+          });
+        }
+
+        if (listName == '#page') {
+          todos = all_todos.filter(function(todo) {
+            if (todo.domain == currentSite && todo.url == currentPage) return true;
+          });
+        }
+
+        all_todos = all_todos.diff(todos);
+
         processExistingTodos(todos);
       });
     };
@@ -101,21 +149,23 @@ $(document).ready(function() {
         var hasCompletedItems = false;
 
         for (var index in existingTodos){
-          theClass = '';
-          checked = '';
-          if (existingTodos[index].completed === true) {
-            theClass = 'strike';
-            checked = 'checked';
-            hasCompletedItems = true;
-          }
+          if (typeof existingTodos[index] == 'object') {
+            theClass = '';
+            checked = '';
+            if (existingTodos[index].completed === true) {
+              theClass = 'strike';
+              checked = 'checked';
+              hasCompletedItems = true;
+            }
 
-          var id = existingTodos[index].index;
-          var value = existingTodos[index].text;
+            var id = existingTodos[index].index;
+            var value = existingTodos[index].text;
 
-          $(listName + ' ' + "#tasks").append(prepareLiElement(id, theClass, checked, value));
+            $(listName + ' ' + "#tasks").append(prepareLiElement(id, theClass, checked, value));
 
-          if (higherIndex < existingTodos[index].index) {
-            higherIndex = existingTodos[index].index;
+            if (higherIndex < existingTodos[index].index) {
+              higherIndex = existingTodos[index].index;
+            }
           }
         }
 
@@ -144,13 +194,26 @@ $(document).ready(function() {
 
         $(listName + ' ' + "#tasks").append(prepareLiElement(id, theClass, checked, value));
 
-        todos.push({ index: higherIndex, text: value });
+        var todo = { index: higherIndex, text: value };
+
+        if (listName == '#site') {
+          todo.domain = currentSite;
+        }
+
+        if (listName == '#page') {
+          todo.domain = currentSite;
+          todo.url = currentPage;
+          if (currentHash) todo.hash = currentHash;
+        }
+
+        todos.push(todo);
         saveToLocalStorage();
 
         $(listName + ' ' + "#task").val("");
       }
 
       recalculatePercentage();
+
       return false;
     };
 
@@ -215,17 +278,12 @@ $(document).ready(function() {
       saveToLocalStorage();
       recalculatePercentage();
     });
+
+    debugger;
   };
 
-  var alignHeightsToTheMaximumColumnLength = function alignHeightsToTheMaximumColumnLength() {
-    //Align heights to the max found
-    var max_height = 0;
-    $('.to-do-list').each(function(index, list) {
-      var list_height = $(list).height();
-      if (list_height > max_height) max_height = list_height;
-    });
-    $('.to-do-list').height(max_height);
-  };
+  setupTodoList('#general');
+
 
 
 });
