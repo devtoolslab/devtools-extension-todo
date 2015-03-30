@@ -213,6 +213,7 @@ $(document).ready(function() {
       }
 
       recalculatePercentage();
+      alignHeightsToTheMaximumColumnLength();
 
       return false;
     };
@@ -245,6 +246,7 @@ $(document).ready(function() {
       evaluateIfClearCompletedShouldShow();
       saveToLocalStorage();
       recalculatePercentage();
+      alignHeightsToTheMaximumColumnLength();
     });
 
     //Complete
@@ -281,7 +283,5 @@ $(document).ready(function() {
   };
 
   setupTodoList('#general');
-
-
 
 });
