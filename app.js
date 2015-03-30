@@ -222,6 +222,16 @@ $(document).ready(function() {
     var element = document.querySelectorAll(listName + ' ' + '#tasks-form')[0];
     element.addEventListener("submit", submit_callback, false);
 
+    // Evaluate if "clear completed" links should be shown
+    var evaluateIfClearCompletedShouldShow = function evaluateIfClearCompletedShouldShow() {
+      if ($(listName + ' ' + '.strike').length > 0) {
+        $(listName + ' ' + '#clear-completed-items').parent().removeClass('hidden');
+      } else {
+        if ($(listName + ' ' + '.strike').length === 0) {
+          $(listName + ' ' + '#clear-completed-items').parent().addClass('hidden');
+        }
+      }
+    };
 
     // Remove a task
     $(document).on("click", listName + " " + ".delete", function() {
@@ -232,11 +242,10 @@ $(document).ready(function() {
         return element.index == itemIndex;
       })[0]), 1);
 
+      evaluateIfClearCompletedShouldShow();
       saveToLocalStorage();
-
       recalculatePercentage();
     });
-
 
     //Complete
     $(document).on("click", listName + " " + "input[type=checkbox]", function() {
@@ -247,16 +256,7 @@ $(document).ready(function() {
         return element.index == itemIndex;
       })[0];
 
-      todo.completed = $(this).parent().hasClass('strike');
-
-      if (todo.completed) {
-        $(listName + ' ' + '#clear-completed-items').parent().removeClass('hidden');
-      } else {
-        if ($(listName + ' ' + '.strike').length === 0) {
-          $(listName + ' ' + '#clear-completed-items').parent().addClass('hidden');
-        }
-      }
-
+      evaluateIfClearCompletedShouldShow();
       saveToLocalStorage();
       recalculatePercentage();
     });
