@@ -24,5 +24,5 @@ Install and open the DevTools, you'll find a `TODO` panel.
 # Future
 
 - Will see how to improve the TODO visualization to make easier findind TODOs without having to load the web pages
-- Will soon try to port to Firefox too.
-- Will add some sort of cross-browser / team syncronization
+- Port to Firefox / IE / Safari )
+- Will add some sort of cross-browser / team syncronization (Parse / Firebase)
