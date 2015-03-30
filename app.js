@@ -278,8 +278,6 @@ $(document).ready(function() {
       saveToLocalStorage();
       recalculatePercentage();
     });
-
-    debugger;
   };
 
   setupTodoList('#general');
