@@ -35,8 +35,7 @@ chrome.extension.onConnect.addListener(function (port) {
     });
 
     chrome.tabs.onUpdated.addListener(function (theTabId, changes, tabObject) {
-      if (tabId == theTabId && changes.status == "complete") {
-        console.log("Tab Load Complete " + theTabId);
+      if (tabId == theTabId) {
         port.postMessage(tabId);
       }
     });
